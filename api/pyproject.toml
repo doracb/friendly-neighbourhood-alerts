@@ -1,0 +1,25 @@
+[project]
+name = "api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "doracb", email = "doracb2@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "fastapi[standard]>=0.141.1",
+    "geoalchemy2>=0.20.0",
+    "psycopg2-binary>=2.9.12",
+    "pydantic>=2.13.5",
+    "sqlalchemy>=2.0.52",
+]
+
+[project.scripts]
+api = "api:main"
+
+[tool.fastapi]
+entrypoint = "src.main:app"
+
+[tool.uv]
+package = false

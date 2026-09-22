@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { 
+  Dialog, DialogTitle, DialogContent, DialogActions, 
+  Button, TextField, MenuItem, Box, Typography 
+} from '@mui/material';
 
-const ReportForm = ({ location, onReportSubmitted }) => {
+const ReportForm = ({ location, open, onClose, onReportSubmitted }) => {
   const [issueType, setIssueType] = useState('no_hot_water');
   const [description, setDescription] = useState('');
   const [status, setStatus] = useState(null);
@@ -24,9 +28,10 @@ const ReportForm = ({ location, onReportSubmitted }) => {
       });
 
       if (response.ok) {
-        setStatus('Success! Issue reported.');
+        setStatus(null);
         setDescription('');
         onReportSubmitted();
+        onClose();
       } else {
         setStatus('Failed to submit. Please try again.');
       }
@@ -36,29 +41,48 @@ const ReportForm = ({ location, onReportSubmitted }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-      <label style={{ fontWeight: 'bold' }}>Type of Issue:</label>
-      <select value={issueType} onChange={(e) => setIssueType(e.target.value)} style={{ padding: '8px' }}>
-        <option value="no_hot_water">No Hot Water</option>
-        <option value="no_heating">No Heating</option>
-        <option value="power_outage">Power Outage</option>
-      </select>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle fontWeight="bold" color="primary.contrastText">
+        Report an Issue
+      </DialogTitle>
+      
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+            <TextField
+              select
+              label="Type of Issue"
+              value={issueType}
+              onChange={(e) => setIssueType(e.target.value)}
+              fullWidth
+            >
+              <MenuItem value="no_hot_water">No Hot Water</MenuItem>
+              <MenuItem value="no_heating">No Heating</MenuItem>
+              <MenuItem value="power_outage">Power Outage</MenuItem>
+            </TextField>
 
-      <label style={{ fontWeight: 'bold' }}>Details:</label>
-      <textarea 
-        value={description} 
-        onChange={(e) => setDescription(e.target.value)} 
-        placeholder="E.g., Pipe burst outside the local cat cafe..." 
-        rows="3" 
-        style={{ padding: '8px', resize: 'vertical' }} 
-      />
-
-      <button type="submit" style={{ padding: '10px', backgroundColor: '#4CAF50', color: 'white', border: 'none', borderRadius: '5px', cursor: 'pointer' }}>
-        Submit Report
-      </button>
-
-      {status && <p style={{ fontWeight: 'bold' }}>{status}</p>}
-    </form>
+            <TextField
+              label="Details"
+              multiline
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="E.g., Pipe burst outside the local cat cafe..."
+              fullWidth
+            />
+            
+            {status && <Typography color="error" fontWeight="bold">{status}</Typography>}
+          </Box>
+        </DialogContent>
+        
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={onClose} color="inherit">Cancel</Button>
+          <Button type="submit" variant="contained" color="primary" disableElevation>
+            Submit Report
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
   );
 };
 

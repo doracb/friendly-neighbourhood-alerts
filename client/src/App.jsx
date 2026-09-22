@@ -1,122 +1,78 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { useState, useEffect } from 'react';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import useGeolocation from './hooks/useGeolocation';
+import IssueMap from './components/IssueMap';
+import ReportForm from './components/ReportForm';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#FFCB56',
+      contrastText: '#2e303a',
+    },
+    secondary: {
+      main: '#FFA259',
+    },
+    error: {
+      main: '#FF7E7E',
+    },
+    background: {
+      default: '#FFEDB9',
+      paper: '#ffffff',
+    },
+  },
+  typography: {
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+  },
+})
 
 function App() {
-  const [count, setCount] = useState(0)
+  const { location, error, loading, getLocation } = useGeolocation();
+  const [reports, setReports] = useState([]);
+
+  const fetchReports = async () => {
+    try {
+      const response = await fetch('http://127.0.0.1:8000/reports/');
+      if (response.ok) {
+        const data = await response.json();
+        setReports(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch reports:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports();
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
+    <ThemeProvider theme={theme}>
+      <CssBaseline /> 
+      
+      <Box sx={{ p: 3, maxWidth: '600px', mx: 'auto' }}>
+        <Typography variant="h4" component="h1" gutterBottom fontWeight="bold" color="#2e303a">
+          Friendly Neighbourhood Alerts
+        </Typography>
+        
+        <button onClick={getLocation} disabled={loading}>
+          {loading ? 'Locating...' : 'Report Issue Here'}
         </button>
-      </section>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+        {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+        
+        {location && (
+          <Box sx={{ mt: 3 }}>
+            <IssueMap location={location} reports={reports} />
+            <ReportForm location={location} onReportSubmitted={fetchReports} />
+          </Box>
+        )}
+      </Box>
+    </ThemeProvider>
+  );
 }
 
-export default App
+export default App;
